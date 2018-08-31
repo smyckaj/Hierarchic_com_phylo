@@ -1,0 +1,28 @@
+model {
+  #linear regression
+  eta <- X %*% b ## linear regression
+
+  #random effect
+  for (i in 1:n) { rand[i]~dnorm(0,tau) }
+  tau ~ dgamma(.05,.005)
+
+  #expected response
+  for (i in 1:n) { mu[i] <-  ilogit(eta[i]+rand[i]) }
+
+  #response
+  for (i in 1:n) { end[i] ~ dbin(mu[i],div[i]) }
+  
+
+  #parametric effect priors
+  for (i in 1:7) { b[i] ~ dnorm(0,0.039) }
+
+  #prior for smooth term 
+  K1 <- S1[1:29,1:29] * lambda[1]  + S1[1:29,30:58] * lambda[2]
+  b[8:36] ~ dmnorm(zero[8:36],K1) 
+  
+  #smoothing parameter priors
+  for (i in 1:2) {
+    lambda[i] ~ dgamma(.05,.005)
+    rho[i] <- log(lambda[i])
+  }
+}
